@@ -138,12 +138,14 @@ public class Main {
     double targetSectionWidth = (double) target.width / granularity[0];
     double targetSectionHeight = (double) target.height / granularity[1];
 
+    double targetSectionUpper = 0;
+    double targetSectionLower = targetSectionHeight;
     for (int outY = 0; outY < granularity[1]; outY++) {
+      double targetSectionLeft = 0;
+      double targetSectionRight = targetSectionWidth;
       for (int outX = 0; outX < granularity[0]; outX++) {
-        Pixel targetSectionAveragePixel = target.getAveragePixelInBounds(targetSectionWidth * outX, 
-            targetSectionWidth * (outX + 1), 
-            targetSectionHeight * outY, 
-            targetSectionHeight * (outY + 1));
+        Pixel targetSectionAveragePixel = target.getAveragePixelInBounds(targetSectionLeft, targetSectionRight,
+            targetSectionUpper, targetSectionLower);
 
         ImageWrapper closestSource = nearestImageFinder.find(targetSectionAveragePixel);
         if (closestSource == null) {
@@ -151,9 +153,15 @@ public class Main {
           return;
         }
 
-        BufferedImage compressedSource = closestSource.getCompressedImage(resolution[0], resolution[1]);        
+        BufferedImage compressedSource = closestSource.getCompressedImage(resolution[0], resolution[1]);
         outputRaster.setRect(resolution[0] * outX, resolution[1] * outY, compressedSource.getRaster());
+
+        targetSectionLeft = targetSectionRight;
+        targetSectionRight += targetSectionWidth;
       }
+      
+      targetSectionUpper = targetSectionLower;
+      targetSectionLower += targetSectionHeight;
     }
 
     try {

@@ -26,31 +26,40 @@ public class ImageWrapper {
   }
 
   public BufferedImage getCompressedImage(int width, int height) {
-    if (compressedImage != null && width == compressedWidth && height == compressedHeight) {
-      return compressedImage;
+    if (this.compressedImage != null && width == compressedWidth && height == compressedHeight) {
+      return this.compressedImage;
     }
     this.compressedWidth = width;
     this.compressedHeight = height;
-    BufferedImage compressedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    this.compressedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+
+    double sectionHeight = this.height / height;
+    double sectionWidth = this.width / width;
+
+    double upperBound = 0;
+    double lowerBound = sectionHeight;
 
     for (int y = 0; y < height; y++) {
-      double upperBound = ((double) y) * this.height / height;
-      double lowerBound = ((double) y + 1) * this.height / height;
+      double leftBound = 0;
+      double rightBound = sectionWidth;
       for (int x = 0; x < width; x++) {
-        double leftBound = ((double) x) * this.width / width;
-        double rightBound = ((double) x + 1) * this.width / width;
-
         Pixel averagePixel = this.getAveragePixelInBounds(leftBound, rightBound, upperBound, lowerBound);
-        compressedImage.setRGB(x, y, averagePixel.toIntRgb());
+        this.compressedImage.setRGB(x, y, averagePixel.toIntRgb());
+
+        leftBound = rightBound;
+        rightBound += sectionWidth;
       }
+
+      upperBound = lowerBound;
+      lowerBound += sectionHeight;
     }
 
-    return compressedImage;
+    return this.compressedImage;
   }
   
   public Pixel getAveragePixel() {
     if (this.averagePixel == null) {
-      this.averagePixel = this.getAveragePixelInBounds(0.0, (double) this.width, 0.0, (double) this.height);
+      this.averagePixel = this.getAveragePixelInBounds(0.0, this.width, 0.0, this.height);
     }
     
     return this.averagePixel;
@@ -66,6 +75,7 @@ public class ImageWrapper {
    */
   public Pixel getAveragePixelInBounds(double left, double right, double upper, double lower) {
     if (left < 0 || right > this.width || upper < 0 || lower > this.height) {
+      System.out.println("Left: " + left + "\nRight: " + right + "\nUpper: " + upper + "\nLower: " + lower);
       throw new InvalidParameterException("Invalid image bound parameters.");
     }
 
