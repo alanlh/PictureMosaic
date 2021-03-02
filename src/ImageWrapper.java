@@ -36,22 +36,22 @@ public class ImageWrapper {
     double sectionHeight = this.height / height;
     double sectionWidth = this.width / width;
 
-    double upperBound = 0;
-    double lowerBound = sectionHeight;
+    double[] xCoords = new double[width + 1];
+    double[] yCoords = new double[height + 1];
+
+    for (int x = 0; x <= width; x++) {
+      xCoords[x] = sectionWidth * x;
+    }
+
+    for (int y = 0; y <= height; y++) {
+      yCoords[y] = sectionHeight * y;
+    }
 
     for (int y = 0; y < height; y++) {
-      double leftBound = 0;
-      double rightBound = sectionWidth;
       for (int x = 0; x < width; x++) {
-        Pixel averagePixel = this.getAveragePixelInBounds(leftBound, rightBound, upperBound, lowerBound);
+        Pixel averagePixel = this.getAveragePixelInBounds(xCoords[x], xCoords[x + 1], yCoords[y], yCoords[y + 1]);
         this.compressedImage.setRGB(x, y, averagePixel.toIntRgb());
-
-        leftBound = rightBound;
-        rightBound += sectionWidth;
       }
-
-      upperBound = lowerBound;
-      lowerBound += sectionHeight;
     }
 
     return this.compressedImage;
